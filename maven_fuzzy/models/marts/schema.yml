@@ -1,0 +1,34 @@
+version: 2
+
+models:
+  - name: mart_revenue_trend
+    description: "Monthly sessions, orders, revenue and gross profit trend"
+    columns:
+      - name: month
+        description: "Truncated to first of month"
+      - name: sessions
+        description: "Total unique sessions"
+      - name: orders
+        description: "Total orders placed"
+      - name: revenue
+        description: "Gross revenue in USD"
+      - name: gross_profit
+        description: "Revenue minus COGS"
+
+  - name: mart_channel_performance
+    description: "Conversion rate and revenue by traffic channel, campaign and device"
+    columns:
+      - name: channel
+        description: "UTM source e.g. gsearch, bsearch"
+      - name: cvr_pct
+        description: "Orders / Sessions as a percentage"
+      - name: revenue
+        description: "Total revenue in USD"
+
+  - name: mart_conversion_funnel
+    description: "Session-level funnel flags from home page through to order confirmation"
+    columns:
+      - name: session_id
+        description: "One row per session"
+      - name: converted
+        description: "1 if session reached thank-you page, 0 otherwise"

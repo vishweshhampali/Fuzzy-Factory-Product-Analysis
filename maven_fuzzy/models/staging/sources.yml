@@ -1,0 +1,13 @@
+version: 2
+
+sources:
+  - name: main
+    database: maven
+    schema: main
+    tables:
+      - name: website_sessions
+      - name: website_pageviews
+      - name: orders
+      - name: order_items
+      - name: order_item_refunds
+      - name: products

@@ -1,0 +1,16 @@
+# Python
+venv
+__pycache__
+.pyc
+
+# dbt
+logs
+target
+dbt_packages
+
+# DuckDB — too large for GitHub (upload to Kaggle instead)
+.duckdb
+
+# IDE
+.idea
+.vscode

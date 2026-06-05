@@ -1,0 +1,21 @@
+name: 'maven_fuzzy'
+version: '1.0.0'
+profile: 'maven_fuzzy'
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  maven_fuzzy:
+    staging:
+      +materialized: view
+    marts:
+      +materialized: table

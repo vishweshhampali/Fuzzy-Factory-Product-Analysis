@@ -1,0 +1,15 @@
+version: 2
+
+models:
+  - name: stg_sessions
+    description: "Cleaned website sessions"
+  - name: stg_pageviews
+    description: "Cleaned website pageviews"
+  - name: stg_orders
+    description: "Cleaned orders"
+  - name: stg_order_items
+    description: "Cleaned order line items"
+  - name: stg_refunds
+    description: "Cleaned order item refunds"
+  - name: stg_products
+    description: "Cleaned products reference table"

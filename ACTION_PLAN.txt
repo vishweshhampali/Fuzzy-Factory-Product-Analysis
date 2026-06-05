@@ -1,0 +1,87 @@
+================================================================================
+MAVEN FUZZY FACTORY — SPRINT 1 CONCLUSIONS
+================================================================================
+
+QUESTION: Who is coming to this site and what are they doing?
+
+--------------------------------------------------------------------------------
+CONCLUSION 1 — Repeat users are worth more, but only if they're on desktop
+--------------------------------------------------------------------------------
+Repeat desktop users convert at 10–11% vs 8–9% for new desktop users.
+Revenue per session is $6.20–6.64 for repeat desktop vs $4.53–5.69 for new.
+On mobile this advantage almost disappears — repeat mobile CVR is 3.42% vs
+3.15% new. Loyalty is not overcoming the mobile experience problem.
+
+→ Retention efforts should target desktop users. Retargeting repeat mobile
+  users will underperform until mobile is fixed.
+
+--------------------------------------------------------------------------------
+CONCLUSION 2 — Mobile is losing the business ~$105k in recoverable revenue
+--------------------------------------------------------------------------------
+Desktop CVR is 8–11%. Mobile CVR is 3% across every channel and user type.
+gsearch mobile alone has 92,472 sessions. Closing half the gap to desktop
+(3.15% → 5%) = ~1,750 extra orders × ~$60 AOV = ~$105,000 from one fix.
+This is not a traffic quality problem — the same channels perform 3x worse
+on mobile. It is a UX/product problem.
+
+→ Mobile experience is the single highest ROI fix available.
+
+--------------------------------------------------------------------------------
+CONCLUSION 3 — Socialbook has zero retention value and should be cut
+--------------------------------------------------------------------------------
+Socialbook CVR: 4.99% desktop, 0.83% mobile. Revenue/session: $3.22 desktop,
+$0.57 mobile. repeat_pct = 0.0% across every funnel stage for socialbook.
+Not a single socialbook user comes back for a second session.
+Compare to gsearch desktop: 8.27% CVR, $4.93 revenue/session.
+
+→ Cut or heavily reduce socialbook. Reallocate to gsearch desktop.
+
+--------------------------------------------------------------------------------
+CONCLUSION 4 — The product page is where the most money is being lost
+--------------------------------------------------------------------------------
+57,750 desktop gsearch sessions abandoned at the product page — the largest
+drop-off point in the entire funnel. Users are interested enough to click
+a product but not convinced enough to add to cart. This is a copy, imagery,
+or trust signal problem, not a traffic problem.
+
+→ Priority 1 fix. A/B test copy, images, social proof on product pages.
+
+--------------------------------------------------------------------------------
+CONCLUSION 5 — Billing page is losing loyal users at the last step
+--------------------------------------------------------------------------------
+10,514 gsearch desktop sessions abandoned at billing. Of direct traffic
+billing abandoners, 65.94% are repeat users. These are people who know
+the brand, came back, went through the entire funnel — and still didn't
+complete. This is friction or payment UX failure, not a trust issue.
+
+→ Audit payment options, form UX, error states. An abandoned billing
+  email to repeat users would have high recovery rate.
+
+--------------------------------------------------------------------------------
+CONCLUSION 6 — Mobile users are bouncing before seeing any product
+--------------------------------------------------------------------------------
+51,565 mobile gsearch sessions bounced at stage 1 — the single largest
+segment in the entire dataset. Mobile has two separate problems:
+(1) users bounce immediately off the landing page
+(2) users who do progress convert at 3x lower rate than desktop
+These need two separate fixes.
+
+→ Mobile workstream must address landing page AND checkout separately.
+
+--------------------------------------------------------------------------------
+SPRINT 1 PRIORITY LIST
+--------------------------------------------------------------------------------
+1. Fix product page         — highest volume drop, all channels affected
+2. Fix mobile experience    — 51k bounces + 3x CVR gap = two problems
+3. Fix billing page         — losing loyal repeat users at the final step
+4. Cut socialbook           — zero repeat users, worst CVR, worst revenue/session
+
+--------------------------------------------------------------------------------
+SPRINT 2 TO INVESTIGATE
+--------------------------------------------------------------------------------
+- A/B test results via utm_content (landing page variants already in the data)
+- Cohort retention curve (do users actually come back month over month?)
+- Product-level analysis (which product has highest refund rate / cross-sell?)
+- Revenue per session trend over time (is the business improving or plateauing?)
+
+================================================================================
