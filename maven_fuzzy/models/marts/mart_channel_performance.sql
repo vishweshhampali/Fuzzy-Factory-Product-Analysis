@@ -1,6 +1,6 @@
 select
-    utm_source                              as channel,
-    utm_campaign                            as campaign,
+    coalesce(utm_source, 'direct')          as channel,
+    coalesce(utm_campaign, 'none')          as campaign,
     device_type,
     count(distinct s.session_id)            as sessions,
     count(distinct o.order_id)              as orders,

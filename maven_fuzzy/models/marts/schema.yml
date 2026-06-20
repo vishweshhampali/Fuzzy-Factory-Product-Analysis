@@ -2,33 +2,273 @@ version: 2
 
 models:
   - name: mart_revenue_trend
-    description: "Monthly sessions, orders, revenue and gross profit trend"
+    description: >
+      Monthly sessions, orders, revenue, COGS, and gross profit.
+      Grouped by session month (not order month) so all sessions are counted,
+      including those that did not convert. Primary model for business health monitoring and growth tracking.
     columns:
       - name: month
-        description: "Truncated to first of month"
+        description: "Calendar month (truncated to the first of the month) based on session date."
+        tests:
+          - not_null
+          - unique
       - name: sessions
-        description: "Total unique sessions"
+        description: "Total unique sessions in the month."
       - name: orders
-        description: "Total orders placed"
+        description: "Total orders placed by sessions originating in the month."
       - name: revenue
-        description: "Gross revenue in USD"
+        description: "Gross revenue in USD from orders in the month."
+      - name: cogs
+        description: "Total cost of goods sold in USD."
       - name: gross_profit
-        description: "Revenue minus COGS"
+        description: "Revenue minus COGS in USD."
 
   - name: mart_channel_performance
-    description: "Conversion rate and revenue by traffic channel, campaign and device"
+    description: >
+      Session volume, conversion rate, and revenue broken down by traffic source (UTM),
+      campaign, and device type. Direct/organic sessions appear as channel='direct'.
+      Used to compare channel effectiveness and inform paid media budget decisions.
     columns:
       - name: channel
-        description: "UTM source e.g. gsearch, bsearch"
+        description: "UTM source (e.g. gsearch, bsearch, socialbook). 'direct' for sessions without a UTM source."
+      - name: campaign
+        description: "UTM campaign name (e.g. nonbrand, brand). 'none' when not set."
+      - name: device_type
+        description: "Device category: desktop or mobile."
+      - name: sessions
+        description: "Total unique sessions for this channel/campaign/device combination."
+      - name: orders
+        description: "Total orders attributed to this combination."
       - name: cvr_pct
-        description: "Orders / Sessions as a percentage"
+        description: "Conversion rate — orders divided by sessions, expressed as a percentage."
       - name: revenue
-        description: "Total revenue in USD"
+        description: "Total revenue in USD attributed to this combination."
+
+  - name: mart_channel_roi
+    description: >
+      Profitability analysis by traffic channel. Extends channel performance with gross profit
+      and per-session economics to identify the most valuable traffic sources.
+      Ordered by revenue_per_session to surface highest-ROI channels first.
+    columns:
+      - name: utm_source
+        description: "Traffic source. 'direct' for sessions without a UTM source."
+      - name: utm_campaign
+        description: "Campaign name within the source. 'none' when not set."
+      - name: device_type
+        description: "Device category: desktop or mobile."
+      - name: sessions
+        description: "Total unique sessions."
+      - name: orders
+        description: "Total orders."
+      - name: cvr_pct
+        description: "Conversion rate as a percentage."
+      - name: total_revenue
+        description: "Gross revenue in USD."
+      - name: revenue_per_session
+        description: "Average revenue generated per session in USD."
+      - name: gross_profit
+        description: "Revenue minus COGS in USD."
+      - name: gross_profit_per_session
+        description: "Average gross profit per session in USD. Primary ROI ranking metric."
 
   - name: mart_conversion_funnel
-    description: "Session-level funnel flags from home page through to order confirmation"
+    description: >
+      Session-level funnel flags tracking which pages each user visited,
+      from the landing page through to order confirmation.
+      One row per session. Used for cohort-level funnel analysis and segmentation.
     columns:
       - name: session_id
-        description: "One row per session"
+        description: "Unique session identifier. One row per session."
+        tests:
+          - unique
+          - not_null
+      - name: utm_source
+        description: "Traffic source for the session."
+      - name: utm_campaign
+        description: "Campaign for the session."
+      - name: device_type
+        description: "Device type for the session: desktop or mobile."
+      - name: saw_home
+        description: "1 if the session included a visit to /home."
+      - name: saw_lander
+        description: "1 if the session included /home or any /lander-* A/B test variant."
+      - name: saw_products
+        description: "1 if the session included the /products listing page."
+      - name: saw_product_page
+        description: "1 if the session viewed any individual product detail page."
+      - name: saw_cart
+        description: "1 if the session reached /cart."
+      - name: saw_shipping
+        description: "1 if the session reached /shipping."
+      - name: saw_billing
+        description: "1 if the session reached /billing or the /billing-2 A/B variant."
       - name: converted
-        description: "1 if session reached thank-you page, 0 otherwise"
+        description: "1 if the session reached /thank-you-for-your-order (completed purchase), 0 otherwise."
+
+  - name: mart_funnel_trend
+    description: >
+      Monthly funnel progression showing how many sessions reach each stage and where they drop off.
+      Used to track funnel health over time and measure the impact of A/B tests and site changes.
+    columns:
+      - name: month
+        description: "Calendar month of the sessions."
+        tests:
+          - not_null
+          - unique
+      - name: sessions
+        description: "Total sessions in the month."
+      - name: reached_product
+        description: "Sessions that viewed at least one individual product detail page."
+      - name: reached_cart
+        description: "Sessions that reached /cart."
+      - name: reached_shipping
+        description: "Sessions that reached /shipping."
+      - name: reached_billing
+        description: "Sessions that reached /billing or /billing-2."
+      - name: converted
+        description: "Sessions that completed a purchase (/thank-you-for-your-order)."
+      - name: overall_cvr_pct
+        description: "Overall session-to-order conversion rate for the month as a percentage."
+      - name: landing_to_product_pct
+        description: "Percentage of sessions that progressed from landing to a product detail page."
+      - name: product_to_cart_pct
+        description: "Percentage of product-page viewers who added to cart."
+      - name: cart_to_order_pct
+        description: "Percentage of cart viewers who completed an order."
+
+  - name: mart_page_leak
+    description: >
+      Quantifies revenue lost at the product-page-to-cart drop-off point,
+      broken down by traffic source and device type.
+      Includes recovery scenarios to size the revenue opportunity from reducing product page abandonment.
+    columns:
+      - name: utm_source
+        description: "Traffic source."
+      - name: device_type
+        description: "Device category: desktop or mobile."
+      - name: total_sessions
+        description: "All sessions for this utm_source/device combination."
+      - name: saw_product_page
+        description: "Sessions that viewed at least one product detail page."
+      - name: reached_cart
+        description: "Sessions that progressed from a product page to /cart."
+      - name: dropped_at_product
+        description: "Sessions that viewed a product page but did not proceed to cart."
+      - name: drop_rate_pct
+        description: "Percentage of product-page viewers who dropped off before adding to cart."
+      - name: avg_order_value
+        description: "Average order value in USD across converting sessions in this segment."
+      - name: revenue_if_10pct_recovered
+        description: "Estimated additional revenue if 10% of product-page droppers converted."
+      - name: revenue_if_5pct_recovered
+        description: "Estimated additional revenue if 5% of product-page droppers converted."
+
+  - name: mart_cohort_retention
+    description: >
+      User retention by acquisition cohort. Shows how many users from each monthly cohort
+      return and are active in subsequent months.
+      Used to measure long-term engagement and compare retention across acquisition channels.
+    columns:
+      - name: cohort_month
+        description: "Month of the user's first-ever session (their acquisition cohort)."
+        tests:
+          - not_null
+      - name: months_since_first
+        description: "Full months elapsed since the cohort month. 0 = active in the same month as acquisition."
+        tests:
+          - not_null
+      - name: active_users
+        description: "Number of users from the cohort who had at least one session in this period."
+
+  - name: mart_refund_rates
+    description: >
+      Product-level refund analysis showing return rates, gross revenue, and net revenue after refunds.
+      Ordered by refund_rate_pct to surface the highest-quality-risk products first.
+      Used to identify product quality issues and inform supplier/product decisions.
+    columns:
+      - name: product_name
+        description: "Product name from the catalog."
+        tests:
+          - not_null
+      - name: total_items_sold
+        description: "Total units sold (count of order line items for this product)."
+      - name: total_refunds
+        description: "Total refunds issued for this product."
+      - name: refund_rate_pct
+        description: "Refund rate as a percentage of items sold."
+      - name: gross_revenue
+        description: "Total revenue before refunds in USD."
+      - name: total_refunded
+        description: "Total amount refunded in USD."
+      - name: net_revenue
+        description: "Gross revenue minus total refunded in USD."
+
+  - name: mart_crosssell
+    description: >
+      Cross-sell analysis by primary (entry) product. Measures how often customers who purchased
+      a given product as their primary item also bought additional items in the same order.
+      Only primary items (is_primary_item = 1) are used as the entry product dimension.
+    columns:
+      - name: entry_product
+        description: "The primary product purchased (the customer's intended purchase)."
+        tests:
+          - not_null
+      - name: total_orders
+        description: "Total orders where this product was the primary item."
+      - name: multi_item_orders
+        description: "Orders that included at least one additional cross-sell item."
+      - name: crosssell_rate_pct
+        description: "Percentage of orders that included at least one cross-sell item."
+      - name: avg_order_value
+        description: "Average total order value in USD for orders with this entry product."
+
+  - name: mart_user_intent
+    description: >
+      Classifies each session into a funnel abandonment stage based on the furthest page reached.
+      Shows where users drop off and whether repeat visitors behave differently from new visitors.
+      Dimensioned by device type and traffic source to enable segment-level diagnosis.
+    columns:
+      - name: intent_stage
+        description: >
+          Furthest funnel stage reached, prefixed with a sort number for ordering:
+          1_bounced, 2_abandoned_products, 3_abandoned_product_page,
+          4_abandoned_cart, 5_abandoned_shipping, 6_abandoned_billing, 7_converted.
+        tests:
+          - not_null
+      - name: device_type
+        description: "Device category: desktop or mobile."
+      - name: utm_source
+        description: "Traffic source for the session."
+      - name: total_sessions
+        description: "Total sessions classified into this intent stage / device / source combination."
+      - name: unique_users
+        description: "Distinct users who had at least one session in this stage/segment."
+      - name: repeat_sessions
+        description: "Sessions from repeat visitors within this intent stage and segment."
+      - name: repeat_pct
+        description: "Percentage of sessions in this stage/segment that came from repeat visitors."
+
+  - name: mart_user_segments
+    description: >
+      Compares conversion rates and revenue across user segments defined by repeat/new status,
+      device type, and traffic source. Used to identify the most valuable user groups and
+      validate whether repeat visitors or specific channels justify investment.
+    columns:
+      - name: is_repeat_session
+        description: "0 = first-time visitor session, 1 = returning visitor session."
+      - name: device_type
+        description: "Device category: desktop or mobile."
+      - name: utm_source
+        description: "Traffic source. NULL for direct or organic sessions."
+      - name: unique_users
+        description: "Distinct users in this segment."
+      - name: total_sessions
+        description: "Total sessions in this segment."
+      - name: total_orders
+        description: "Total orders placed from sessions in this segment."
+      - name: cvr_pct
+        description: "Conversion rate as a percentage (orders / sessions)."
+      - name: total_revenue
+        description: "Total revenue in USD from this segment."
+      - name: revenue_per_session
+        description: "Average revenue generated per session in USD."

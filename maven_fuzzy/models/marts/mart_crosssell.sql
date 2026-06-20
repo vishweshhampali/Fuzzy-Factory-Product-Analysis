@@ -12,5 +12,6 @@ left join {{ ref('stg_products') }} p
     on oi.product_id = p.product_id
 left join {{ ref('stg_orders') }} o
     on oi.order_id = o.order_id
+where oi.is_primary_item = 1
 group by p.product_name
 order by crosssell_rate_pct desc

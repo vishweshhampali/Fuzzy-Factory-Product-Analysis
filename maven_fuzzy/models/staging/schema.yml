@@ -2,14 +2,162 @@ version: 2
 
 models:
   - name: stg_sessions
-    description: "Cleaned website sessions"
+    description: >
+      Cleaned and renamed website session records. One row per session.
+      Primary source for traffic attribution, device segmentation, and user-level analysis.
+      Renames website_session_id → session_id for consistency across the project.
+    columns:
+      - name: session_id
+        description: "Unique session identifier (renamed from website_session_id)."
+        tests:
+          - unique
+          - not_null
+      - name: created_at
+        description: "Timestamp when the session started."
+        tests:
+          - not_null
+      - name: user_id
+        description: "User associated with this session. The same user_id appears across repeat visits."
+        tests:
+          - not_null
+      - name: is_repeat_session
+        description: "1 if the user had a prior session, 0 for first-time visitors."
+      - name: utm_source
+        description: "Paid traffic source (e.g. gsearch, bsearch, socialbook). NULL for direct or organic sessions."
+      - name: utm_campaign
+        description: "Campaign name within the source (e.g. nonbrand, brand)."
+      - name: utm_content
+        description: "Ad creative or content variant label used in A/B tests."
+      - name: device_type
+        description: "Device category: desktop or mobile."
+      - name: http_referer
+        description: "Referring URL for the session."
+
   - name: stg_pageviews
-    description: "Cleaned website pageviews"
+    description: >
+      Cleaned pageview events. One row per page visited within a session.
+      Used for funnel construction, page-level drop-off analysis, and session journey mapping.
+      Renames website_pageview_id → pageview_id and website_session_id → session_id.
+    columns:
+      - name: pageview_id
+        description: "Unique pageview identifier (renamed from website_pageview_id)."
+        tests:
+          - unique
+          - not_null
+      - name: created_at
+        description: "Timestamp of the pageview."
+        tests:
+          - not_null
+      - name: session_id
+        description: "Session in which this pageview occurred (renamed from website_session_id)."
+        tests:
+          - not_null
+      - name: pageview_url
+        description: "URL path of the page viewed (e.g. /home, /products, /cart, /thank-you-for-your-order)."
+        tests:
+          - not_null
+
   - name: stg_orders
-    description: "Cleaned orders"
+    description: >
+      Cleaned order records. One row per completed order.
+      Primary source for revenue, conversion, and gross profit metrics.
+      Renames website_session_id → session_id for consistent joins to stg_sessions.
+    columns:
+      - name: order_id
+        description: "Unique order identifier."
+        tests:
+          - unique
+          - not_null
+      - name: created_at
+        description: "Timestamp when the order was placed."
+        tests:
+          - not_null
+      - name: session_id
+        description: "Session that generated this order (renamed from website_session_id)."
+        tests:
+          - not_null
+      - name: user_id
+        description: "Customer who placed the order."
+        tests:
+          - not_null
+      - name: primary_product_id
+        description: "The main intended product in the order."
+      - name: items_purchased
+        description: "Total number of items in the order. Values > 1 indicate a cross-sell occurred."
+      - name: price_usd
+        description: "Total order revenue in USD."
+      - name: cogs_usd
+        description: "Total cost of goods sold for the order in USD."
+
   - name: stg_order_items
-    description: "Cleaned order line items"
+    description: >
+      Cleaned order line items. One row per product within an order.
+      Used for product-level revenue, refund rate, and cross-sell analysis.
+      The is_primary_item flag distinguishes the intended purchase from add-ons.
+    columns:
+      - name: order_item_id
+        description: "Unique line-item identifier."
+        tests:
+          - unique
+          - not_null
+      - name: created_at
+        description: "Timestamp when the line item was created."
+        tests:
+          - not_null
+      - name: order_id
+        description: "Parent order for this line item."
+        tests:
+          - not_null
+      - name: product_id
+        description: "Product purchased on this line."
+        tests:
+          - not_null
+      - name: is_primary_item
+        description: "1 if this is the primary/intended product, 0 for cross-sell add-ons."
+      - name: price_usd
+        description: "Revenue for this line item in USD."
+      - name: cogs_usd
+        description: "Cost of goods sold for this line item in USD."
+
   - name: stg_refunds
-    description: "Cleaned order item refunds"
+    description: >
+      Cleaned refund records. One row per refund issued against an order line item.
+      Used for product quality analysis and net revenue calculations.
+      Renames order_item_refund_id → refund_id for brevity.
+    columns:
+      - name: refund_id
+        description: "Unique refund identifier (renamed from order_item_refund_id)."
+        tests:
+          - unique
+          - not_null
+      - name: created_at
+        description: "Timestamp when the refund was processed."
+        tests:
+          - not_null
+      - name: order_item_id
+        description: "The specific order line item that was refunded."
+        tests:
+          - not_null
+      - name: order_id
+        description: "Parent order of the refunded item."
+        tests:
+          - not_null
+      - name: refund_amount_usd
+        description: "Amount refunded to the customer in USD."
+
   - name: stg_products
-    description: "Cleaned products reference table"
+    description: >
+      Cleaned product catalog. One row per product.
+      Used as a lookup to join product names onto order item and refund data.
+    columns:
+      - name: product_id
+        description: "Unique product identifier."
+        tests:
+          - unique
+          - not_null
+      - name: created_at
+        description: "Date the product was added to the catalog (proxy for product launch date)."
+      - name: product_name
+        description: "Human-readable product name (e.g. The Original Mr. Fuzzy)."
+        tests:
+          - not_null

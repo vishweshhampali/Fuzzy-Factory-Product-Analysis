@@ -4,10 +4,148 @@ sources:
   - name: main
     database: maven
     schema: main
+    description: "Raw Maven Fuzzy Factory e-commerce tables loaded from CSV exports into DuckDB."
     tables:
       - name: website_sessions
+        description: "One row per user session. Captures traffic attribution (UTM parameters) and device type."
+        columns:
+          - name: website_session_id
+            description: "Primary key — unique session identifier."
+            tests:
+              - unique
+              - not_null
+          - name: user_id
+            description: "User who initiated the session. Shared across repeat visits by the same user."
+            tests:
+              - not_null
+          - name: created_at
+            description: "Timestamp when the session started."
+            tests:
+              - not_null
+          - name: is_repeat_session
+            description: "1 if the user had a previous session, 0 for first-time visitors."
+          - name: utm_source
+            description: "Paid traffic source (e.g. gsearch, bsearch, socialbook). NULL for direct or organic visits."
+          - name: utm_campaign
+            description: "Campaign name within the source (e.g. nonbrand, brand)."
+          - name: utm_content
+            description: "Ad creative or content variant label used in A/B tests."
+          - name: device_type
+            description: "Device category: desktop or mobile."
+          - name: http_referer
+            description: "HTTP referrer URL indicating the origin of the session."
+
       - name: website_pageviews
+        description: "One row per pageview event. Links sessions to the pages users visited, enabling funnel construction and drop-off analysis."
+        columns:
+          - name: website_pageview_id
+            description: "Primary key — unique pageview identifier."
+            tests:
+              - unique
+              - not_null
+          - name: website_session_id
+            description: "Foreign key to website_sessions — the session in which this pageview occurred."
+            tests:
+              - not_null
+          - name: created_at
+            description: "Timestamp of the pageview."
+            tests:
+              - not_null
+          - name: pageview_url
+            description: "URL path of the page viewed (e.g. /home, /products, /cart, /thank-you-for-your-order)."
+            tests:
+              - not_null
+
       - name: orders
+        description: "One row per completed order. Contains revenue and cost figures at the order level."
+        columns:
+          - name: order_id
+            description: "Primary key — unique order identifier."
+            tests:
+              - unique
+              - not_null
+          - name: website_session_id
+            description: "Foreign key to website_sessions — the session that generated this order."
+            tests:
+              - not_null
+          - name: user_id
+            description: "Customer who placed the order."
+            tests:
+              - not_null
+          - name: created_at
+            description: "Timestamp when the order was placed."
+            tests:
+              - not_null
+          - name: primary_product_id
+            description: "The main intended product purchased in this order."
+          - name: items_purchased
+            description: "Total number of line items in the order. Values > 1 indicate a cross-sell occurred."
+          - name: price_usd
+            description: "Total order revenue in USD."
+          - name: cogs_usd
+            description: "Total cost of goods sold for the order in USD."
+
       - name: order_items
+        description: "One row per line item within an order. Used for product-level revenue, refund, and cross-sell analysis."
+        columns:
+          - name: order_item_id
+            description: "Primary key — unique order line-item identifier."
+            tests:
+              - unique
+              - not_null
+          - name: order_id
+            description: "Foreign key to orders — the parent order for this line item."
+            tests:
+              - not_null
+          - name: created_at
+            description: "Timestamp when the line item was created."
+            tests:
+              - not_null
+          - name: product_id
+            description: "Foreign key to products — the product purchased on this line."
+            tests:
+              - not_null
+          - name: is_primary_item
+            description: "1 if this is the primary/intended product in the order, 0 for cross-sell add-ons."
+          - name: price_usd
+            description: "Revenue for this specific line item in USD."
+          - name: cogs_usd
+            description: "Cost of goods sold for this line item in USD."
+
       - name: order_item_refunds
+        description: "One row per refund issued against an order line item. Used for product quality analysis and net revenue calculations."
+        columns:
+          - name: order_item_refund_id
+            description: "Primary key — unique refund identifier."
+            tests:
+              - unique
+              - not_null
+          - name: order_item_id
+            description: "Foreign key to order_items — the specific line item being refunded."
+            tests:
+              - not_null
+          - name: order_id
+            description: "Parent order of the refunded item."
+            tests:
+              - not_null
+          - name: created_at
+            description: "Timestamp when the refund was processed."
+            tests:
+              - not_null
+          - name: refund_amount_usd
+            description: "Amount refunded to the customer in USD."
+
       - name: products
+        description: "Product catalog. One row per product sold on the site."
+        columns:
+          - name: product_id
+            description: "Primary key — unique product identifier."
+            tests:
+              - unique
+              - not_null
+          - name: created_at
+            description: "Date the product was launched and added to the catalog."
+          - name: product_name
+            description: "Human-readable product name (e.g. The Original Mr. Fuzzy)."
+            tests:
+              - not_null

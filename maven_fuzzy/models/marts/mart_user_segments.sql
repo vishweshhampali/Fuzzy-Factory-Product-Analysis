@@ -24,3 +24,4 @@ select
     utm_source
 from session_orders
 group by is_repeat_session, device_type, utm_source
+order by is_repeat_session, device_type, utm_source

@@ -1,8 +1,8 @@
 with funnel_flags as (
     select
         session_id,
-        max(case when pageview_url in ('/home', '/lander-1', '/lander-2',
-            '/lander-3', '/lander-4', '/lander-5') then 1 else 0 end) as saw_lander,
+        max(case when pageview_url = '/home'
+                 or pageview_url like '/lander%' then 1 else 0 end)   as saw_lander,
         max(case when pageview_url = '/products'
             then 1 else 0 end)                                         as saw_products,
         max(case when pageview_url in ('/the-original-mr-fuzzy',

@@ -1,5 +1,5 @@
 select
-    date_trunc('month', o.created_at)  as month,
+    date_trunc('month', s.created_at)  as month,
     count(distinct s.session_id)        as sessions,
     count(distinct o.order_id)          as orders,
     round(sum(o.price_usd), 2)          as revenue,

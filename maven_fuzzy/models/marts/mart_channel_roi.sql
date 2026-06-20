@@ -1,8 +1,8 @@
 with session_orders as (
     select
         s.session_id,
-        s.utm_source,
-        s.utm_campaign,
+        coalesce(s.utm_source, 'direct')   as utm_source,
+        coalesce(s.utm_campaign, 'none')   as utm_campaign,
         s.utm_content,
         s.device_type,
         o.order_id,
