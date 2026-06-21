@@ -14,3 +14,6 @@ dbt_packages
 # IDE
 .idea
 .vscode
+
+# Jupyter
+.ipynb_checkpoints/
